@@ -126,31 +126,33 @@
                     const tableBody = document.getElementById('matchups-table-body');
                     tableBody.innerHTML = ''; 
 
-                    const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
+                    // Comprehensive list of Big Ten identifiers
+                    const b10Teams = ["WASH", "UW", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
 
                     const b10Events = events.filter(event => {
-                        const competitors = event.competitions.competitors;
-                        return competitors.some(c => b10Teams.includes(c.team.abbreviation));
+                        const competitors = event.competitions[0].competitors;
+                        return competitors.some(c => b10Teams.includes(c.team.abbreviation.toUpperCase()));
                     });
 
                     if (b10Events.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No Big Ten games found in this week\'s schedule.</td></tr>';
+                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#8da2bb;">No Big Ten games found in this week\'s schedule.</td></tr>';
                         return;
                     }
 
                     b10Events.forEach(event => {
                         const shortName = event.shortName;
+                        const comp = event.competitions[0];
                         const isCompleted = event.status.type.completed;
                         const state = event.status.type.state;
-                        const competitors = event.competitions.competitors;
+                        const competitors = comp.competitors;
                         
                         let home = competitors.find(c => c.homeAway === 'home');
                         let away = competitors.find(c => c.homeAway === 'away');
                         
-                        let homeScore = parseInt(home.score);
-                        let awayScore = parseInt(away.score);
+                        let homeScore = parseInt(home.score) || 0;
+                        let awayScore = parseInt(away.score) || 0;
                         
-                        let scoreText = away.team.abbreviation + ' ' + away.score + ', ' + home.team.abbreviation + ' ' + home.score + ' (' + event.status.type.shortDetail + ')';
+                        let scoreText = away.team.abbreviation + ' ' + awayScore + ', ' + home.team.abbreviation + ' ' + homeScore + ' (' + event.status.type.shortDetail + ')';
                         if (state === 'pre') {
                             scoreText = event.status.type.detail; 
                         }
@@ -159,29 +161,31 @@
                         let indicatorText = "🍇 Track Outcome";
                         let indicatorClass = "mixed";
 
-                        const isUWGame = shortName.includes("WASH");
+                        const isUWGame = shortName.toUpperCase().includes("WASH") || shortName.toUpperCase().includes("UW ");
 
                         if (isUWGame) {
                             impactText = "Primary Matchup. Critical win vector required to reach the 6-win bowl eligibility baseline.";
                             indicatorText = "🍇 Primary Matchup";
                             indicatorClass = "mixed";
                             if (isCompleted) {
-                                const uwWon = (away.team.abbreviation === "WASH" && awayScore > homeScore) || (home.team.abbreviation === "WASH" && homeScore > awayScore);
+                                const uwWon = (away.team.abbreviation.toUpperCase() === "WASH" && awayScore > homeScore) || (home.team.abbreviation.toUpperCase() === "WASH" && homeScore > awayScore);
                                 indicatorText = uwWon ? "👍 Good (Huskies Won!)" : "❌ Bad (Huskies Lost)";
                                 indicatorClass = uwWon ? "good" : "bad";
                             }
                         } else {
                             impactText = `Middle-tier conference leverage tracking. Pinning rival losses supports Washington's standings ladder.`;
-                            if (isCompleted) {
-                                if (shortName.includes("MINN") && shortName.includes("IND")) {
-                                    const indWon = (away.team.abbreviation === "IND" && awayScore > homeScore) || (home.team.abbreviation === "IND" && homeScore > awayScore);
-                                    indicatorText = indWon ? "👍 Good (Minnesota Lost)" : "❌ Bad (Minnesota Won)";
-                                    indicatorClass = indWon ? "good" : "bad";
+                            if (isCompleted || state === 'in') {
+                                if ((shortName.includes("MINN") && shortName.includes("IND")) || (shortName.includes("MINN") && shortName.includes("IU"))) {
+                                    const indLeading = away.team.abbreviation === "IND" || away.team.abbreviation === "IU" ? awayScore > homeScore : homeScore > awayScore;
+                                    indicatorText = indLeading ? "👍 Good (Indiana Leading)" : "❌ Bad (Minnesota Leading)";
+                                    indicatorClass = indLeading ? "good" : "bad";
+                                    if (isCompleted) indicatorText = indLeading ? "👍 Good (Minnesota Lost)" : "❌ Bad (Minnesota Won)";
                                 }
                                 if (shortName.includes("WIS") && shortName.includes("IOWA")) {
-                                    const wisWon = (away.team.abbreviation === "WIS" && awayScore > homeScore) || (home.team.abbreviation === "WIS" && homeScore > awayScore);
-                                    indicatorText = wisWon ? "👍 Good (Iowa Lost)" : "❌ Bad (Iowa Won)";
-                                    indicatorClass = wisWon ? "good" : "bad";
+                                    const iowaLeading = away.team.abbreviation === "IOWA" ? awayScore > homeScore : homeScore > awayScore;
+                                    indicatorText = iowaLeading ? "❌ Bad (Iowa Leading)" : "👍 Good (Wisconsin Leading)";
+                                    indicatorClass = iowaLeading ? "bad" : "good";
+                                    if (isCompleted) indicatorText = iowaLeading ? "❌ Bad (Iowa Won)" : "👍 Good (Iowa Lost)";
                                 }
                             }
                         }
