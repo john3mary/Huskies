@@ -89,12 +89,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>🦅 Huskies Bowl & Playoff Tracker</h1>
-        <div class="subtitle">Big Ten Standings Live Feed (UW: 4-3, 1-3 Big Ten)</div>
+        <h1>🍇 Huskies Bowl & Playoff Tracker</h1>
+        <div class="subtitle">Big Ten Standings Automated Weekly Feed (UW: 4-3, 1-3 Big Ten)</div>
         
         <div class="control-panel">
-            <button class="btn" onclick="fetchCollegeScores()">🔄 Refresh Dashboard Scores</button>
-            <div class="timestamp" id="refresh-time">Last Refreshed: Connecting to live feed...</div>
+            <button class="btn" onclick="fetchWeeklyScores()">🔄 Refresh Weekly Matchups</button>
+            <div class="timestamp" id="refresh-time">Connecting to live Big Ten data stream...</div>
         </div>
 
         <div class="table-wrapper">
@@ -103,60 +103,39 @@
                     <tr>
                         <th>Matchup</th>
                         <th>Significance & Playoff Impact</th>
-                        <th>Status / Live Score</th>
+                        <th>Status / Current Score</th>
                         <th>Indicator</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td style="font-weight:bold;">WASH @ NEB</td>
-                        <td>Critical tiebreaker hurdle. Crucial win vector to claim bowl eligibility baseline.</td>
-                        <td id="score-uw">5:00 PM PDT</td>
-                        <td id="ind-uw" class="mixed">🍇 Primary Matchup</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:bold;">MINN @ IND</td>
-                        <td>Minnesota holds 3 conference wins; a Gophers loss stalls middle-tier gap extension.</td>
-                        <td id="score-minn">12:30 PM PDT</td>
-                        <td id="ind-minn" class="good">🍇 Root for Indiana</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:bold;">WIS @ IOWA</td>\n                        <td>Iowa holds tiebreaker rights over UW. An Iowa loss compresses the standings pool.</td>
-                        <td id="score-iowa">12:30 PM PDT</td>
-                        <td id="ind-iowa" class="good">🍇 Root for Wisconsin</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:bold;">MICH @ RUTG</td>
-                        <td>Michigan is tied with UW at 1-3 in conference play. Rutgers win splits the floor tie.</td>
-                        <td id="score-mich">1:00 PM PDT</td>
-                        <td id="ind-mich" class="good">🍇 Root for Rutgers</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:bold;">NW @ ORE</td>
-                        <td>Oregon holds the top conference block; looking for additional division friction.</td>
-                        <td id="score-ore">1:00 PM PDT</td>
-                        <td id="ind-ore" class="good">🍇 Root for Northwestern</td>
-                    </tr>
+                <tbody id="matchups-table-body">
+                    <tr><td colspan="4" style="text-align:center; color:#8da2bb;">Loading current weekly games schedule...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        function fetchCollegeScores() {
-            // Using a CORS bypass proxy route to guarantee cross-origin file transmission safety
-            fetch('https://allorigins.win' + encodeURIComponent('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard'))
+        function fetchWeeklyScores() {
+            fetch('https://allorigins.win' + encodeURIComponent('https://espn.com'))
                 .then(res => {
                     if (res.ok) return res.json();
-                    throw new Error('Network response error.');
+                    throw new Error('Connection timeout.');
                 })
                 .then(wrapper => {
                     const data = JSON.parse(wrapper.contents);
                     const events = data.events || [];
-                    
+                    const tableBody = document.getElementById('matchups-table-body');
+                    tableBody.innerHTML = ''; // Clear out past records completely
+
+                    if (events.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No Big Ten games scheduled for this week.</td></tr>';
+                        return;
+                    }
+
                     events.forEach(event => {
                         const shortName = event.shortName;
                         const isCompleted = event.status.type.completed;
+                        const state = event.status.type.state;
                         const competitors = event.competitions.competitors;
                         
                         let home = competitors.find(c => c.homeAway === 'home');
@@ -165,36 +144,58 @@
                         let homeScore = parseInt(home.score);
                         let awayScore = parseInt(away.score);
                         
-                        const scoreText = away.team.abbreviation + ' ' + away.score + ', ' + home.team.abbreviation + ' ' + home.score + ' (' + event.status.type.shortDetail + ')';
+                        // Parse status layout text strings
+                        let scoreText = `${away.team.abbreviation} ${away.score}, ${home.team.abbreviation} ${home.score} (${event.status.type.shortDetail})`;
+                        if (state === 'pre') {
+                            scoreText = event.status.type.detail; // Fallback display scheduled times seamlessly
+                        }
 
-                        if (shortName.includes("WASH") || shortName.includes("NEB")) {
-                            if (shortName.includes("WASH") && shortName.includes("NEB")) {
-                                document.getElementById('score-uw').innerText = scoreText;
+                        // Automated significance classification script logic
+                        let impactText = "Big Ten conference positioning stake match.";
+                        let indicatorText = "🍇 Conference Matchup";
+                        let indicatorClass = "mixed";
+
+                        const isUWGame = shortName.includes("WASH");
+
+                        if (isUWGame) {
+                            impactText = "Primary Matchup. Critical win vector required to reach the 6-win bowl eligibility baseline.";
+                            indicatorText = "🍇 Primary Matchup";
+                            indicatorClass = "mixed";
+                            if (isCompleted) {
+                                const uwWon = (away.team.abbreviation === "WASH" && awayScore > homeScore) || (home.team.abbreviation === "WASH" && homeScore > awayScore);
+                                indicatorText = uwWon ? "👍 Good (Huskies Won!)" : "❌ Bad (Huskies Lost)";
+                                indicatorClass = uwWon ? "good" : "bad";
                             }
+                        } else {
+                            impactText = `Middle-tier leverage tracking. Every conference loss within this tier compresses the standings floor for Washington.`;
+                            indicatorText = `🦅 Track Outcome`;
                         }
-                        if (shortName.includes("MINN") && shortName.includes("IND")) {
-                            document.getElementById('score-minn').innerText = scoreText;
-                        }
-                        if (shortName.includes("WIS") && shortName.includes("IOWA")) {
-                            document.getElementById('score-iowa').innerText = scoreText;
-                        }
-                        if (shortName.includes("MICH") && shortName.includes("RUTG")) {
-                            document.getElementById('score-mich').innerText = scoreText;
-                        }
-                        if (shortName.includes("NW") && shortName.includes("ORE")) {
-                            document.getElementById('score-ore').innerText = scoreText;
+
+                        // Append rows dynamically to your container grid columns
+                        const row = `<tr>
+                            <td style="font-weight:bold;">${shortName}</td>
+                            <td>${impactText}</td>
+                            <td>${scoreText}</td>
+                            <td class="${indicatorClass}">${indicatorText}</td>
+                        </tr>`;
+                        
+                        // Prioritize Washington game by sliding it directly to the top row
+                        if (isUWGame) {
+                            tableBody.insertAdjacentHTML('afterbegin', row);
+                        } else {
+                            tableBody.insertAdjacentHTML('beforeend', row);
                         }
                     });
-                    
+
                     const now = new Date();
                     document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString();
                 })
                 .catch(() => {
                     const now = new Date();
-                    document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString() + " (Sync delay - click button to retry)";
+                    document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString() + " (Sync delay - tap button to retry)";
                 });
         }
-        window.onload = fetchCollegeScores;
+        window.onload = fetchWeeklyScores;
     </script>
 </body>
 </html>
