@@ -116,7 +116,6 @@
 
     <script>
         function fetchWeeklyScores() {
-            // Rebuilt targeting the open CDN scoreboard structure to explicitly route past all server locks
             fetch('https://espn.com')
                 .then(res => {
                     if (res.ok) return res.json();
@@ -127,12 +126,12 @@
                     const tableBody = document.getElementById('matchups-table-body');
                     tableBody.innerHTML = ''; 
 
-                    // Big Ten Conference team master lookup array
                     const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
 
                     const b10Events = events.filter(event => {
-                        const competitors = event.competitions[0].competitors;
-                        return competitors.some(c => b10Teams.includes(c.team.abbreviation.toUpperCase()));
+                        const comp = event.competitions && event.competitions[0];
+                        if (!comp || !comp.competitors) return false;
+                        return comp.competitors.some(c => b10Teams.includes(c.team.abbreviation.toUpperCase()));
                     });
 
                     if (b10Events.length === 0) {
@@ -142,7 +141,9 @@
 
                     b10Events.forEach(event => {
                         const shortName = event.shortName;
-                        const comp = event.competitions[0];
+                        const comp = event.competitions && event.competitions[0];
+                        if (!comp) return;
+                        
                         const isCompleted = event.status.type.completed;
                         const state = event.status.type.state;
                         const competitors = comp.competitors;
@@ -176,7 +177,7 @@
                         } else {
                             impactText = `Middle-tier conference leverage tracking. Pinning rival losses supports Washington's standings ladder.`;
                             if (isCompleted || state === 'in') {
-                                if (shortName.includes("MINN") && shortName.includes("MINN")) {
+                                if (shortName.includes("MINN") && shortName.includes("IND")) {
                                     const indLeading = away.team.abbreviation === "IND" ? awayScore > homeScore : homeScore > awayScore;
                                     indicatorText = indLeading ? "👍 Good (Indiana Leading)" : "❌ Bad (Minnesota Leading)";
                                     indicatorClass = indLeading ? "good" : "bad";
