@@ -3,218 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Huskies Bowl & Playoff Tracker</title>
+    <title>UW Huskies Live Rooting Guide</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0b0c10;
-            color: #f4f5f7;
-            margin: 0;
-            padding: 15px;
-        }
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-        }
-        h1 {
-            color: #b7a57a;
-            font-size: 1.6rem;
-            text-align: center;
-            margin: 15px 0 5px 0;
-        }
-        .subtitle {
-            text-align: center;
-            color: #8da2bb;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-        .control-panel {
-            text-align: center;
-            margin-bottom: 20px;
-            background-color: #1f2833;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #45a29e;
-        }
-        .btn {
-            background-color: #b7a57a;
-            color: #0b0c10;
-            padding: 10px 20px;
-            border-radius: 4px;
-            font-weight: bold;
-            border: none;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background-color: #9a885c;
-        }
-        .timestamp {
-            font-size: 0.9rem;
-            color: #12e193;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .table-wrapper {
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #1f2833;
-            border-radius: 6px;
-            overflow: hidden;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #3a506b;
-        }
-        th {
-            background-color: #1f2833;
-            color: #b7a57a;
-            border-bottom: 2px solid #45a29e;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-        }
-        .good { color: #12e193; font-weight: bold; }
-        .bad { color: #e63946; font-weight: bold; }
-        .mixed { color: #ffb703; font-weight: bold; }
+        :root { --uw-purple: #4b2e83; --uw-gold: #b7a57a; --win-green: #2e7d32; --lose-red: #c62828; --bg-light: #f5f5f7; --card-bg: #ffffff; --text-dark: #1d1d1f; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
+        header { background-color: var(--uw-purple); color: white; padding: 20px 15px; text-align: center; border-bottom: 4px solid var(--uw-gold); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+        .header-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        header p { font-size: 0.85rem; color: var(--uw-gold); font-weight: 600; text-transform: uppercase; }
+        .refresh-btn { background: none; border: 1px solid var(--uw-gold); color: var(--uw-gold); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s ease; }
+        .refresh-btn:active { background: var(--uw-gold); color: var(--uw-purple); }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
+        .summary-banner { background: #ffffff; border-radius: 12px; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #e5e5ea; display: flex; text-align: center; }
+        .summary-stat { flex: 1; }
+        .summary-stat:not(:last-child) { border-right: 1px solid #e5e5ea; }
+        .summary-num { font-size: 1.5rem; font-weight: 800; }
+        .summary-num.wins { color: var(--win-green); }
+        .summary-num.losses { color: var(--lose-red); }
+        .summary-num.pending { color: #86868b; }
+        .summary-label { font-size: 0.75rem; color: #86868b; font-weight: 600; text-transform: uppercase; }
+        .section-title { font-size: 1.1rem; color: var(--uw-purple); margin: 20px 0 10px 5px; font-weight: 700; }
+        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #ccc; }
+        .matchup-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .team-display { font-size: 1.05rem; font-weight: 700; }
+        .score-display { font-size: 1.2rem; font-weight: 800; }
+        .game-status { font-size: 0.8rem; color: #86868b; margin-bottom: 12px; font-weight: 600; text-transform: uppercase; }
+        .guide-box { display: flex; gap: 8px; margin-top: 10px; }
+        .badge { flex: 1; padding: 8px; border-radius: 6px; text-align: center; font-size: 0.8rem; font-weight: bold; }
+        .badge.highlight-active { box-shadow: 0 0 0 2px var(--win-green); background-color: rgba(46, 125, 50, 0.2); color: var(--win-green); }
+        .badge.highlight-against { box-shadow: 0 0 0 2px var(--lose-red); background-color: rgba(198, 40, 40, 0.1); color: var(--lose-red); }
+        .reason { font-size: 0.85rem; line-height: 1.35; color: #3a3a3c; background: #fafdff; padding: 8px 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed #e5e5ea; }
+        #loading { text-align: center; padding: 40px; color: #86868b; font-weight: 600; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🦅 Huskies Bowl & Playoff Tracker</h1>
-        <div class="subtitle">Big Ten Standings Automated Weekly Feed (UW: 4-3, 1-3 Big Ten)</div>
-        
-        <div class="control-panel">
-            <button class="btn" onclick="fetchWeeklyScores()">🔄 Refresh Weekly Matchups</button>
-            <div class="timestamp" id="refresh-time">Connecting to live Big Ten data stream...</div>
+    <header>
+        <h1>Huskies Rooting Guide</h1>
+        <div class="header-container">
+            <p>Live Weekly Tracker Feed</p>
+            <button class="refresh-btn" onclick="fetchScores()">Refresh</button>
         </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Matchup</th>
-                        <th>Significance & Playoff Impact</th>
-                        <th>Status / Current Score</th>
-                        <th>Indicator</th>
-                    </tr>
-                </thead>
-                <tbody id="matchups-table-body">
-                    <tr><td colspan="4" style="text-align:center; color:#8da2bb;">Loading current weekly games schedule...</td></tr>
-                </tbody>
-            </table>
+    </header>
+    <div class="container">
+        <div class="summary-banner">
+            <div class="summary-stat"><div id="stat-wins" class="summary-num wins">0</div><div class="summary-label">Good</div></div>
+            <div class="summary-stat"><div id="stat-losses" class="summary-num losses">0</div><div class="summary-label">Bad</div></div>
+            <div class="summary-stat"><div id="stat-pending" class="summary-num pending">0</div><div class="summary-label">Live</div></div>
+        </div>
+        <div id="loading">Loading live matchup endpoints...</div>
+        <div id="dashboard-content" style="display: none;">
+            <div class="section-title">Big Ten Leverage Matchups</div>
+            <div id="games-list"></div>
         </div>
     </div>
-
     <script>
-        function fetchWeeklyScores() {
-            fetch('https://espn.com')
-                .then(res => {
-                    if (res.ok) return res.json();
-                    throw new Error('Connection timeout.');
-                })
-                .then(data => {
-                    const events = data.events || [];
-                    const tableBody = document.getElementById('matchups-table-body');
-                    tableBody.innerHTML = ''; 
-
-                    const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
-
-                    const b10Events = events.filter(event => {
-                        const comp = event.competitions && event.competitions[0];
-                        if (!comp || !comp.competitors) return false;
-                        return comp.competitors.some(c => b10Teams.includes(c.team.abbreviation.toUpperCase()));
-                    });
-
-                    if (b10Events.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#8da2bb;">No Big Ten games found in this week\'s schedule.</td></tr>';
-                        return;
+        const rootingRules = {
+            "WASH": { rootFor: "WASH", reason: "The main event. Head-to-head validation for conference standing positioning." },
+            "NW":   { rootFor: "ORE",  reason: "Northwestern is up at 3-1. A loss drops them back into the mid-tier group with UW." },
+            "MINN": { rootFor: "IND",  reason: "Minnesota holds the tiebreaker advantage. We need them saddled with losses." },
+            "USC":  { rootFor: "OSU",  reason: "Every additional conference loss USC takes minimizes their head-to-head advantage value." }
+        };
+        async function fetchScores() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            if (refreshBtn) refreshBtn.innerText = "⏳ ...";
+            try {
+                const res = await fetch('https://espn.com');
+                const data = await res.json();
+                const events = data.events || [];
+                const listContainer = document.getElementById('games-list');
+                listContainer.innerHTML = '';
+                let matchedGamesCount = 0, outcomeWins = 0, outcomeLosses = 0, outcomePending = 0;
+                
+                events.forEach(event => {
+                    const competition = event.competitions[0];
+                    const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
+                    const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
+                    const homeAbbrev = homeTeam.team.abbreviation;
+                    const awayAbbrev = awayTeam.team.abbreviation;
+                    let rule = rootingRules[homeAbbrev] || rootingRules[awayAbbrev];
+                    
+                    if (rule) {
+                        matchedGamesCount++;
+                        const isFinal = event.status.type.completed;
+                        const statusText = event.status.type.detail;
+                        const isHomeTarget = rootingRules[homeAbbrev];
+                        const displayRule = isHomeTarget ? rootingRules[homeAbbrev] : rootingRules[awayAbbrev];
+                        let winnerAbbrev = null;
+                        
+                        if (isFinal) {
+                            if (homeTeam.winner) winnerAbbrev = homeAbbrev;
+                            if (awayTeam.winner) winnerAbbrev = awayAbbrev;
+                        }
+                        if (!isFinal) { outcomePending++; } 
+                        else if (winnerAbbrev === displayRule.rootFor) { outcomeWins++; } 
+                        else { outcomeLosses++; }
+                        
+                        const card = document.createElement('div');
+                        card.className = 'card';
+                        if (event.status.type.state === 'in') { card.style.borderLeftColor = 'var(--uw-gold)'; } 
+                        else if (isFinal) { card.style.borderLeftColor = (winnerAbbrev === displayRule.rootFor) ? 'var(--win-green)' : 'var(--lose-red)'; }
+                        
+                        card.innerHTML = `
+                            <div class="game-status">${statusText}</div>
+                            <div class="matchup-row"><span class="team-display">${awayTeam.team.displayName}</span><span class="score-display">${awayTeam.score || 0}</span></div>
+                            <div class="matchup-row"><span class="team-display">${homeTeam.team.displayName}</span><span class="score-display">${homeTeam.score || 0}</span></div>
+                            <div class="guide-box">
+                                <div class="badge ${displayRule.rootFor === awayAbbrev ? 'highlight-active' : 'highlight-against'}">${displayRule.rootFor === awayAbbrev ? '👍 Target Win' : '❌ Target Loss'} ${awayAbbrev}</div>
+                                <div class="badge ${displayRule.rootFor === homeAbbrev ? 'highlight-active' : 'highlight-against'}">${displayRule.rootFor === homeAbbrev ? '👍 Target Win' : '❌ Target Loss'} ${homeAbbrev}</div>
+                            </div>
+                            <div class="reason">${displayRule.reason}</div>
+                        `;
+                        listContainer.appendChild(card);
                     }
-
-                    b10Events.forEach(event => {
-                        const shortName = event.shortName;
-                        const comp = event.competitions && event.competitions[0];
-                        if (!comp) return;
-                        
-                        const isCompleted = event.status.type.completed;
-                        const state = event.status.type.state;
-                        const competitors = comp.competitors;
-                        
-                        let home = competitors.find(c => c.homeAway === 'home');
-                        let away = competitors.find(c => c.homeAway === 'away');
-                        
-                        let homeScore = parseInt(home.score) || 0;
-                        let awayScore = parseInt(away.score) || 0;
-                        
-                        let scoreText = `${away.team.abbreviation} ${awayScore}, ${home.team.abbreviation} ${homeScore} (${event.status.type.shortDetail})`;
-                        if (state === 'pre') {
-                            scoreText = event.status.type.detail; 
-                        }
-
-                        let impactText = "Big Ten conference positioning match.";
-                        let indicatorText = "🍇 Track Outcome";
-                        let indicatorClass = "mixed";
-
-                        const isUWGame = shortName.toUpperCase().includes("WASH") || shortName.toUpperCase().includes("UW");
-
-                        if (isUWGame) {
-                            impactText = "Primary Matchup. Critical win vector required to reach the 6-win bowl eligibility baseline.";
-                            indicatorText = "🍇 Primary Matchup";
-                            indicatorClass = "mixed";
-                            if (isCompleted) {
-                                const uwWon = (away.team.abbreviation.toUpperCase() === "WASH" && awayScore > homeScore) || (home.team.abbreviation.toUpperCase() === "WASH" && homeScore > awayScore);
-                                indicatorText = uwWon ? "👍 Good (Huskies Won!)" : "❌ Bad (Huskies Lost)";
-                                indicatorClass = uwWon ? "good" : "bad";
-                            }
-                        } else {
-                            impactText = `Middle-tier conference leverage tracking. Pinning rival losses supports Washington's standings ladder.`;
-                            if (isCompleted || state === 'in') {
-                                if (shortName.includes("MINN") && shortName.includes("IND")) {
-                                    const indLeading = away.team.abbreviation === "IND" ? awayScore > homeScore : homeScore > awayScore;
-                                    indicatorText = indLeading ? "👍 Good (Indiana Leading)" : "❌ Bad (Minnesota Leading)";
-                                    indicatorClass = indLeading ? "good" : "bad";
-                                    if (isCompleted) indicatorText = indLeading ? "👍 Good (Minnesota Lost)" : "❌ Bad (Minnesota Won)";
-                                }
-                                if (shortName.includes("WIS") && shortName.includes("IOWA")) {
-                                    const iowaLeading = away.team.abbreviation === "IOWA" ? awayScore > homeScore : homeScore > awayScore;
-                                    indicatorText = iowaLeading ? "❌ Bad (Iowa Leading)" : "👍 Good (Wisconsin Leading)";
-                                    indicatorClass = iowaLeading ? "bad" : "good";
-                                    if (isCompleted) indicatorText = iowaLeading ? "❌ Bad (Iowa Won)" : "👍 Good (Iowa Lost)";
-                                }
-                            }
-                        }
-
-                        const row = `<tr>
-                            <td style="font-weight:bold;">${shortName}</td>
-                            <td>${impactText}</td>
-                            <td>${scoreText}</td>
-                            <td class="${indicatorClass}">${indicatorText}</td>
-                        </tr>`;
-                        
-                        if (isUWGame) {
-                            tableBody.insertAdjacentHTML('afterbegin', row);
-                        } else {
-                            tableBody.insertAdjacentHTML('beforeend', row);
-                        }
-                    });
-
-                    const now = new Date();
-                    document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString();
-                })
-                .catch(err => {
-                    const now = new Date();
-                    document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString() + " (Sync delay - tap button to retry)";
                 });
+                document.getElementById('stat-wins').innerText = outcomeWins;
+                document.getElementById('stat-losses').innerText = outcomeLosses;
+                document.getElementById('stat-pending').innerText = outcomePending;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard-content').style.display = 'block';
+                if(matchedGamesCount === 0) { listContainer.innerHTML = '<div class="reason">No targeted leverage matchups active.</div>'; }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "Feed connection error.";
+            } finally {
+                if (refreshBtn) refreshBtn.innerText = "Refresh";
+            }
         }
-        window.onload = fetchWeeklyScores;
+        fetchScores();
+        setInterval(fetchScores, 60000); 
     </script>
 </body>
 </html>
