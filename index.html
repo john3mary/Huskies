@@ -116,7 +116,7 @@
 
     <script>
         function fetchWeeklyScores() {
-            fetch('https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard')
+            fetch('https://espn.com')
                 .then(res => {
                     if (res.ok) return res.json();
                     throw new Error('Connection timeout.');
@@ -126,11 +126,10 @@
                     const tableBody = document.getElementById('matchups-table-body');
                     tableBody.innerHTML = ''; 
 
-                    // Comprehensive list of Big Ten identifiers
-                    const b10Teams = ["WASH", "UW", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
+                    const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD", "FLA", "UGA", "AUB", "MISS", "ASU", "BYU", "UTAH", "CIN", "UVA", "WAKE", "ND", "NAVY", "ARIZ", "TTU", "SMU", "SYR", "OKST", "ISU", "MIA", "UNC", "MIZ", "ARK", "TXST", "BOIS"];
 
                     const b10Events = events.filter(event => {
-                        const competitors = event.competitions[0].competitors;
+                        const competitors = event.competitions.competitors;
                         return competitors.some(c => b10Teams.includes(c.team.abbreviation.toUpperCase()));
                     });
 
