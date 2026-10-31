@@ -116,8 +116,8 @@
 
     <script>
         function fetchWeeklyScores() {
-            // Replaced proxy channel with direct open mirror pipeline to stop background timeout errors
-            fetch('https://espn.com')
+            // Using the precise web data api feed directly to pull structural scoreboard records securely
+            fetch('https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard')
                 .then(res => {
                     if (res.ok) return res.json();
                     throw new Error('Connection timeout.');
@@ -127,12 +127,10 @@
                     const tableBody = document.getElementById('matchups-table-body');
                     tableBody.innerHTML = ''; 
 
-                    // Array tracking Big Ten current member team abbreviations
                     const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
 
-                    // Filter only games containing at least one Big Ten conference team
                     const b10Events = events.filter(event => {
-                        const competitors = event.competitions[0].competitors;
+                        const competitors = event.competitions.competitors;
                         return competitors.some(c => b10Teams.includes(c.team.abbreviation));
                     });
 
@@ -145,7 +143,7 @@
                         const shortName = event.shortName;
                         const isCompleted = event.status.type.completed;
                         const state = event.status.type.state;
-                        const competitors = event.competitions[0].competitors;
+                        const competitors = event.competitions.competitors;
                         
                         let home = competitors.find(c => c.homeAway === 'home');
                         let away = competitors.find(c => c.homeAway === 'away');
