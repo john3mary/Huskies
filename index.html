@@ -116,27 +116,36 @@
 
     <script>
         function fetchWeeklyScores() {
-            fetch('https://allorigins.win' + encodeURIComponent('https://espn.com'))
+            // Replaced proxy channel with direct open mirror pipeline to stop background timeout errors
+            fetch('https://espn.com')
                 .then(res => {
                     if (res.ok) return res.json();
                     throw new Error('Connection timeout.');
                 })
-                .then(wrapper => {
-                    const data = JSON.parse(wrapper.contents);
+                .then(data => {
                     const events = data.events || [];
                     const tableBody = document.getElementById('matchups-table-body');
-                    tableBody.innerHTML = ''; // Clear out past records completely
+                    tableBody.innerHTML = ''; 
 
-                    if (events.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No Big Ten games scheduled for this week.</td></tr>';
+                    // Array tracking Big Ten current member team abbreviations
+                    const b10Teams = ["WASH", "NEB", "MINN", "IND", "WIS", "IOWA", "MICH", "RUTG", "NW", "ORE", "OSU", "PSU", "USC", "UCLA", "PUR", "ILL", "MSU", "MD"];
+
+                    // Filter only games containing at least one Big Ten conference team
+                    const b10Events = events.filter(event => {
+                        const competitors = event.competitions[0].competitors;
+                        return competitors.some(c => b10Teams.includes(c.team.abbreviation));
+                    });
+
+                    if (b10Events.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No Big Ten games found in this week\'s schedule.</td></tr>';
                         return;
                     }
 
-                    events.forEach(event => {
+                    b10Events.forEach(event => {
                         const shortName = event.shortName;
                         const isCompleted = event.status.type.completed;
                         const state = event.status.type.state;
-                        const competitors = event.competitions.competitors;
+                        const competitors = event.competitions[0].competitors;
                         
                         let home = competitors.find(c => c.homeAway === 'home');
                         let away = competitors.find(c => c.homeAway === 'away');
@@ -144,15 +153,13 @@
                         let homeScore = parseInt(home.score);
                         let awayScore = parseInt(away.score);
                         
-                        // Parse status layout text strings
                         let scoreText = `${away.team.abbreviation} ${away.score}, ${home.team.abbreviation} ${home.score} (${event.status.type.shortDetail})`;
                         if (state === 'pre') {
-                            scoreText = event.status.type.detail; // Fallback display scheduled times seamlessly
+                            scoreText = event.status.type.detail; 
                         }
 
-                        // Automated significance classification script logic
-                        let impactText = "Big Ten conference positioning stake match.";
-                        let indicatorText = "🍇 Conference Matchup";
+                        let impactText = "Big Ten conference positioning match.";
+                        let indicatorText = "🍇 Track Outcome";
                         let indicatorClass = "mixed";
 
                         const isUWGame = shortName.includes("WASH");
@@ -167,11 +174,9 @@
                                 indicatorClass = uwWon ? "good" : "bad";
                             }
                         } else {
-                            impactText = `Middle-tier leverage tracking. Every conference loss within this tier compresses the standings floor for Washington.`;
-                            indicatorText = `🦅 Track Outcome`;
+                            impactText = `Middle-tier conference leverage tracking. Pinning rival losses supports Washington's standings ladder.`;
                         }
 
-                        // Append rows dynamically to your container grid columns
                         const row = `<tr>
                             <td style="font-weight:bold;">${shortName}</td>
                             <td>${impactText}</td>
@@ -179,7 +184,6 @@
                             <td class="${indicatorClass}">${indicatorText}</td>
                         </tr>`;
                         
-                        // Prioritize Washington game by sliding it directly to the top row
                         if (isUWGame) {
                             tableBody.insertAdjacentHTML('afterbegin', row);
                         } else {
@@ -190,7 +194,7 @@
                     const now = new Date();
                     document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString();
                 })
-                .catch(() => {
+                .catch(err => {
                     const now = new Date();
                     document.getElementById('refresh-time').innerText = "Last Refreshed: " + now.toLocaleTimeString() + " (Sync delay - tap button to retry)";
                 });
