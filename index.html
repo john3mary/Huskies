@@ -89,7 +89,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>🍇 Huskies Bowl & Playoff Tracker</h1>
+        <h1>🦅 Huskies Bowl & Playoff Tracker</h1>
         <div class="subtitle">Big Ten Standings Automated Weekly Feed (UW: 4-3, 1-3 Big Ten)</div>
         
         <div class="control-panel">
@@ -116,7 +116,6 @@
 
     <script>
         function fetchWeeklyScores() {
-            // Using the precise web data api feed directly to pull structural scoreboard records securely
             fetch('https://site.web.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard')
                 .then(res => {
                     if (res.ok) return res.json();
@@ -151,7 +150,7 @@
                         let homeScore = parseInt(home.score);
                         let awayScore = parseInt(away.score);
                         
-                        let scoreText = `${away.team.abbreviation} ${away.score}, ${home.team.abbreviation} ${home.score} (${event.status.type.shortDetail})`;
+                        let scoreText = away.team.abbreviation + ' ' + away.score + ', ' + home.team.abbreviation + ' ' + home.score + ' (' + event.status.type.shortDetail + ')';
                         if (state === 'pre') {
                             scoreText = event.status.type.detail; 
                         }
@@ -173,6 +172,18 @@
                             }
                         } else {
                             impactText = `Middle-tier conference leverage tracking. Pinning rival losses supports Washington's standings ladder.`;
+                            if (isCompleted) {
+                                if (shortName.includes("MINN") && shortName.includes("IND")) {
+                                    const indWon = (away.team.abbreviation === "IND" && awayScore > homeScore) || (home.team.abbreviation === "IND" && homeScore > awayScore);
+                                    indicatorText = indWon ? "👍 Good (Minnesota Lost)" : "❌ Bad (Minnesota Won)";
+                                    indicatorClass = indWon ? "good" : "bad";
+                                }
+                                if (shortName.includes("WIS") && shortName.includes("IOWA")) {
+                                    const wisWon = (away.team.abbreviation === "WIS" && awayScore > homeScore) || (home.team.abbreviation === "WIS" && homeScore > awayScore);
+                                    indicatorText = wisWon ? "👍 Good (Iowa Lost)" : "❌ Bad (Iowa Won)";
+                                    indicatorClass = wisWon ? "good" : "bad";
+                                }
+                            }
                         }
 
                         const row = `<tr>
