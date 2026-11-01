@@ -3,135 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UW Huskies Live Rooting Guide</title>
+    <title>UW Huskies Playoff & Bowl Tracker</title>
     <style>
-        :root { --uw-purple: #4b2e83; --uw-gold: #b7a57a; --win-green: #2e7d32; --lose-red: #c62828; --bg-light: #f5f5f7; --card-bg: #ffffff; --text-dark: #1d1d1f; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background-color: var(--bg-light); color: var(--text-dark); padding-bottom: 30px; }
-        header { background-color: var(--uw-purple); color: white; padding: 20px 15px; text-align: center; border-bottom: 4px solid var(--uw-gold); position: sticky; top: 0; z-index: 100; }
-        header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-        .header-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
-        header p { font-size: 0.85rem; color: var(--uw-gold); font-weight: 600; text-transform: uppercase; }
-        .refresh-btn { background: none; border: 1px solid var(--uw-gold); color: var(--uw-gold); padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s ease; }
-        .refresh-btn:active { background: var(--uw-gold); color: var(--uw-purple); }
-        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
-        .summary-banner { background: #ffffff; border-radius: 12px; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #e5e5ea; display: flex; text-align: center; }
-        .summary-stat { flex: 1; }
-        .summary-stat:not(:last-child) { border-right: 1px solid #e5e5ea; }
-        .summary-num { font-size: 1.5rem; font-weight: 800; }
-        .summary-num.wins { color: var(--win-green); }
-        .summary-num.losses { color: var(--lose-red); }
-        .summary-num.pending { color: #86868b; }
-        .summary-label { font-size: 0.75rem; color: #86868b; font-weight: 600; text-transform: uppercase; }
-        .section-title { font-size: 1.1rem; color: var(--uw-purple); margin: 20px 0 10px 5px; font-weight: 700; }
-        .card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #ccc; }
-        .matchup-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-        .team-display { font-size: 1.05rem; font-weight: 700; }
-        .score-display { font-size: 1.2rem; font-weight: 800; }
-        .game-status { font-size: 0.8rem; color: #86868b; margin-bottom: 12px; font-weight: 600; text-transform: uppercase; }
-        .guide-box { display: flex; gap: 8px; margin-top: 10px; }
-        .badge { flex: 1; padding: 8px; border-radius: 6px; text-align: center; font-size: 0.8rem; font-weight: bold; }
-        .badge.highlight-active { box-shadow: 0 0 0 2px var(--win-green); background-color: rgba(46, 125, 50, 0.2); color: var(--win-green); }
-        .badge.highlight-against { box-shadow: 0 0 0 2px var(--lose-red); background-color: rgba(198, 40, 40, 0.1); color: var(--lose-red); }
-        .reason { font-size: 0.85rem; line-height: 1.35; color: #3a3a3c; background: #fafdff; padding: 8px 10px; border-radius: 6px; margin-top: 10px; border: 1px dashed #e5e5ea; }
-        #loading { text-align: center; padding: 40px; color: #86868b; font-weight: 600; }
+        :root {
+            --uw-purple: #4b2e83;
+            --uw-gold: #b7a57a;
+            --bg-dark: #121212;
+            --card-bg: #1e1e1e;
+            --text-light: #f5f5f7;
+            --text-muted: #a1a1a6;
+            --win-green: #34c759;
+            --lose-red: #ff3b30;
+            --alert-orange: #ff9500;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            padding: 20px 15px 40px 15px;
+        }
+
+        .dashboard-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--uw-purple);
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            color: var(--text-light);
+            font-weight: 800;
+        }
+
+        header p {
+            color: var(--uw-gold);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        .summary-box {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #2c2c2e;
+        }
+
+        .summary-box h3 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            color: var(--uw-gold);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .indicator-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-dot.green { background-color: var(--win-green); }
+        .status-dot.red { background-color: var(--lose-red); }
+        .status-dot.yellow { background-color: #ffcc00; }
+
+        .stat-val {
+            font-weight: 700;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            background-color: var(--uw-purple);
+            color: white;
+            border: 1px solid var(--uw-gold);
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:active {
+            background-color: #372161;
+        }
+
+        .section-header {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            font-weight: 700;
+            border-left: 4px solid var(--uw-gold);
+            padding-left: 8px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #2c2c2e;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .team-row:last-of-type {
+            margin-bottom: 14px;
+        }
+
+        .team-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .team-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .bowl-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: #2c2c2e;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        
+        .bowl-badge.eligible {
+            background-color: rgba(52, 199, 89, 0.15);
+            color: var(--win-green);
+        }
+
+        .danger-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(255, 149, 0, 0.15);
+            color: var(--alert-orange);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .team-score {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .impact-statement {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #151516;
+            border-left: 4px solid #444;
+        }
+
+        .impact-statement.good { border-left-color: var(--win-green); }
+        .impact-statement.bad { border-left-color: var(--lose-red); }
+        .impact-statement.neutral { border-left-color: #ffcc00; }
+
+        #loading-notice {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Huskies Rooting Guide</h1>
-        <div class="header-container">
-            <p>Live Weekly Tracker Feed</p>
-            <button class="refresh-btn" onclick="fetchScores()">Refresh</button>
+
+    <div class="dashboard-container">
+        <header>
+            <h1>Huskies Playoff Tracker</h1>
+            <p id="week-display">Big Ten Leverage Feed</p>
+        </header>
+
+        <div class="summary-box">
+            <h3>Today's Playoff Tracking Summary:</h3>
+            <div class="summary-row">
+                <div class="indicator-label"><span class="status-dot yellow"></span>UW Huskies Outcome:</div>
+                <div id="summary-huskies" class="stat-val">--</div>
+            </div>
+            <div class="summary-row">
+                <div class="indicator-label"><span class="status-dot green"></span>Conference Rivals Knocked Down:</div>
+                <div id="summary-good" class="stat-val">0</div>
+            </div>
+            <div class="summary-row">
+                <div class="indicator-label"><span class="status-dot red"></span>Rivals Holding Ground:</div>
+                <div id="summary-bad" class="stat-val">0</div>
+            </div>
         </div>
-    </header>
-    <div class="container">
-        <div class="summary-banner">
-            <div class="summary-stat"><div id="stat-wins" class="summary-num wins">0</div><div class="summary-label">Good</div></div>
-            <div class="summary-stat"><div id="stat-losses" class="summary-num losses">0</div><div class="summary-label">Bad</div></div>
-            <div class="summary-stat"><div id="stat-pending" class="summary-num pending">0</div><div class="summary-label">Live</div></div>
-        </div>
-        <div id="loading">Loading live matchup endpoints...</div>
-        <div id="dashboard-content" style="display: none;">
-            <div class="section-title">Big Ten Leverage Matchups</div>
-            <div id="games-list"></div>
-        </div>
+
+        <button class="refresh-btn" onclick="loadHuskiesData()">Refresh Scores</button>
+
+        <div class="section-header">Current Weekly Games Schedule</div>
+        <div id="loading-notice">Fetching live game configurations from ESPN...</div>
+        <div id="games-container"></div>
     </div>
+
     <script>
-        const rootingRules = {
-            "WASH": { rootFor: "WASH", reason: "The main event. Head-to-head validation for conference standing positioning." },
-            "NW":   { rootFor: "ORE",  reason: "Northwestern is up at 3-1. A loss drops them back into the mid-tier group with UW." },
-            "MINN": { rootFor: "IND",  reason: "Minnesota holds the tiebreaker advantage. We need them saddled with losses." },
-            "USC":  { rootFor: "OSU",  reason: "Every additional conference loss USC takes minimizes their head-to-head advantage value." }
-        };
-        async function fetchScores() {
-            const refreshBtn = document.querySelector('.refresh-btn');
-            if (refreshBtn) refreshBtn.innerText = "⏳ ...";
+        // Full list of 18 Big Ten teams to identify conference matchups dynamically
+        const bigTenTeams = [
+            "WASH", "ORE", "USC", "UCLA", "OSU", "MICH", "PSU", "IND", 
+            "IOWA", "WIS", "MINN", "NEB", "ILL", "NW", "MSU", "PUR", "RUTG", "MD"
+        ];
+
+        // Teams that played the Huskies this year (Direct Tiebreakers)
+        const pastOpponents = ["MINN", "USC", "IOWA", "PUR", "NEB", "NW", "MICH", "IND", "UCLA", "ORE", "PSU"];
+
+        // Top Tier elite teams that are out of reach for a head-to-head middle tier tiebreaker catch
+        const eliteTier = ["ORE", "IND", "OSU", "PSU"];
+
+        async function loadHuskiesData() {
+            const btn = document.querySelector('.refresh-btn');
+            const loader = document.getElementById('loading-notice');
+            if (btn) btn.innerText = "Refreshing...";
+            if (loader) loader.style.display = 'block';
+
             try {
-                const res = await fetch('https://espn.com');
-                const data = await res.json();
-                const events = data.events || [];
-                const listContainer = document.getElementById('games-list');
-                listContainer.innerHTML = '';
-                let matchedGamesCount = 0, outcomeWins = 0, outcomeLosses = 0, outcomePending = 0;
+                const response = await fetch('https://site.api.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?groups=80');
+                const data = await response.json();
                 
+                // Set the current week dynamically from the ESPN feed context calendar
+                if (data.leagues && data.leagues[0] && data.leagues[0].calendar) {
+                    const activeWeek = data.leagues[0].calendar.find(c => c.active);
+                    if (activeWeek) {
+                        document.getElementById('week-display').innerText = `Live ${activeWeek.label} Leverage Feed`;
+                    }
+                }
+
+                const events = data.events || [];
+                const container = document.getElementById('games-container');
+                container.innerHTML = '';
+                loader.style.display = 'none';
+
+                let goodOutcomes = 0;
+                let badOutcomes = 0;
+                let huskiesStatus = "Scheduled";
+
                 events.forEach(event => {
-                    const competition = event.competitions[0];
-                    const homeTeam = competition.competitors.find(c => c.homeAway === 'home');
-                    const awayTeam = competition.competitors.find(c => c.homeAway === 'away');
-                    const homeAbbrev = homeTeam.team.abbreviation;
-                    const awayAbbrev = awayTeam.team.abbreviation;
-                    let rule = rootingRules[homeAbbrev] || rootingRules[awayAbbrev];
-                    
-                    if (rule) {
-                        matchedGamesCount++;
-                        const isFinal = event.status.type.completed;
-                        const statusText = event.status.type.detail;
-                        const isHomeTarget = rootingRules[homeAbbrev];
-                        const displayRule = isHomeTarget ? rootingRules[homeAbbrev] : rootingRules[awayAbbrev];
-                        let winnerAbbrev = null;
+                    const match = event.competitions[0];
+                    const home = match.competitors.find(c => c.homeAway === 'home');
+                    const away = match.competitors.find(c => c.homeAway === 'away');
+
+                    const hAbbr = home.team.abbreviation;
+                    const aAbbr = away.team.abbreviation;
+
+                    // Ensure it is a Big Ten conference match (either team belongs to the B1G)
+                    const isBigTenMatch = bigTenTeams.includes(hAbbr) || bigTenTeams.includes(aAbbr);
+
+                    if (isBigTenMatch) {
+                        const isFinished = event.status.type.completed;
+                        const state = event.status.type.state;
                         
-                        if (isFinal) {
-                            if (homeTeam.winner) winnerAbbrev = homeAbbrev;
-                            if (awayTeam.winner) winnerAbbrev = awayAbbrev;
+                        // Extract wins from record arrays for bowl verification
+                        const homeWins = (home.records && home.records[0]) ? parseInt(home.records[0].summary.split('-')[0]) : 0;
+                        const awayWins = (away.records && away.records[0]) ? parseInt(away.records[0].summary.split('-')[0]) : 0;
+
+                        // Figure out strategic rooting guide adjustments matching middle-tier logjam
+                        let preferredWinner = null;
+                        let strategicDesc = "";
+
+                        if (hAbbr === "WASH" || aAbbr === "WASH") {
+                            preferredWinner = "WASH";
+                            strategicDesc = "The vital piece. A win directly elevates conference standing math.";
+                        } else {
+                            // If a direct middle pack competitor faces an out-of-reach elite squad, root for elite squad to deliver a loss
+                            const isHomeElite = eliteTier.includes(hAbbr);
+                            const isAwayElite = eliteTier.includes(aAbbr);
+
+                            if (isHomeElite && !isAwayElite) {
+                                preferredWinner = hAbbr;
+                                strategicDesc = `Root for ${hAbbr}. A ${aAbbr} loss pushes a direct middle-pack competitor down.`;
+                            } else if (isAwayElite && !isHomeElite) {
+                                preferredWinner = aAbbr;
+                                strategicDesc = `Root for ${aAbbr}. A ${hAbbr} loss pushes a direct middle-pack competitor down.`;
+                            } else {
+                                // Default back to rooting against whoever has the higher conference stance
+                                preferredWinner = homeWins > awayWins ? aAbbr : hAbbr;
+                                strategicDesc = `Root for ${preferredWinner} to maximize logjam parity in the middle standings.`;
+                            }
                         }
-                        if (!isFinal) { outcomePending++; } 
-                        else if (winnerAbbrev === displayRule.rootFor) { outcomeWins++; } 
-                        else { outcomeLosses++; }
-                        
+
+                        let impactClass = "neutral";
+                        let impactText = strategicDesc;
+
+                        if (isFinished) {
+                            const winnerAbbr = home.winner ? hAbbr : aAbbr;
+                            if (hAbbr === "WASH" || aAbbr === "WASH") {
+                                huskiesStatus = (winnerAbbr === "WASH") ? "🟢 WON" : "🔴 LOST";
+                            } else {
+                                if (winnerAbbr === preferredWinner) {
+                                    goodOutcomes++;
+                                    impactClass = "good";
+                                    impactText = `👉 Result is Good! Loss delivered to middle-tier threat.`;
+                                } else {
+                                    badOutcomes++;
+                                    impactClass = "bad";
+                                    impactText = `⚠️ Result is Bad. Bubble competitor secured standings separation ground.`;
+                                }
+                            }
+                        } else if (state === "in") {
+                            impactClass = "neutral";
+                            impactText = `⚡ Live tracking: Prefer ${preferredWinner} victory outcomes.`;
+                            if (hAbbr === "WASH" || aAbbr === "WASH") huskiesStatus = "🔥 LIVE";
+                        }
+
+                        // Generate tiebreaker alerts if opponents have gone head-to-head with UW
+                        const homeTiebreakerBadge = pastOpponents.includes(hAbbr) && hAbbr !== "WASH" ? `<span class="danger-badge">Tiebreaker Danger</span>` : "";
+                        const awayTiebreakerBadge = pastOpponents.includes(aAbbr) && aAbbr !== "WASH" ? `<span class="danger-badge">Tiebreaker Danger</span>` : "";
+
                         const card = document.createElement('div');
-                        card.className = 'card';
-                        if (event.status.type.state === 'in') { card.style.borderLeftColor = 'var(--uw-gold)'; } 
-                        else if (isFinal) { card.style.borderLeftColor = (winnerAbbrev === displayRule.rootFor) ? 'var(--win-green)' : 'var(--lose-red)'; }
-                        
+                        card.className = 'game-card';
                         card.innerHTML = `
-                            <div class="game-status">${statusText}</div>
-                            <div class="matchup-row"><span class="team-display">${awayTeam.team.displayName}</span><span class="score-display">${awayTeam.score || 0}</span></div>
-                            <div class="matchup-row"><span class="team-display">${homeTeam.team.displayName}</span><span class="score-display">${homeTeam.score || 0}</span></div>
-                            <div class="guide-box">
-                                <div class="badge ${displayRule.rootFor === awayAbbrev ? 'highlight-active' : 'highlight-against'}">${displayRule.rootFor === awayAbbrev ? '👍 Target Win' : '❌ Target Loss'} ${awayAbbrev}</div>
-                                <div class="badge ${displayRule.rootFor === homeAbbrev ? 'highlight-active' : 'highlight-against'}">${displayRule.rootFor === homeAbbrev ? '👍 Target Win' : '❌ Target Loss'} ${homeAbbrev}</div>
+                            <div class="game-header">
+                                <span>${event.status.type.detail}</span>
+                                <span>${match.broadcasts && match.broadcasts[0] ? match.broadcasts[0].media.shortName : 'TV'}</span>
                             </div>
-                            <div class="reason">${displayRule.reason}</div>
+                            <div class="team-row">
+                                <div class="team-info">
+                                    <span class="team-name">${away.team.displayName}</span>
+                                    <span class="bowl-badge ${awayWins >= 6 ? 'eligible' : ''}">${awayWins}/6 Wins</span>
+                                    ${awayTiebreakerBadge}
+                                </div>
+                                <span class="team-score">${away.score || 0}</span>
+                            </div>
+                            <div class="team-row">
+                                <div class="team-info">
+                                    <span class="team-name">${home.team.displayName}</span>
+                                    <span class="bowl-badge ${homeWins >= 6 ? 'eligible' : ''}">${homeWins}/6 Wins</span>
+                                    ${homeTiebreakerBadge}
+                                </div>
+                                <span class="team-score">${home.score || 0}</span>
+                            </div>
+                            <div class="impact-statement ${impactClass}">
+                                ${impactText}
+                            </div>
                         `;
-                        listContainer.appendChild(card);
+                        container.appendChild(card);
                     }
                 });
-                document.getElementById('stat-wins').innerText = outcomeWins;
-                document.getElementById('stat-losses').innerText = outcomeLosses;
-                document.getElementById('stat-pending').innerText = outcomePending;
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard-content').style.display = 'block';
-                if(matchedGamesCount === 0) { listContainer.innerHTML = '<div class="reason">No targeted leverage matchups active.</div>'; }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerText = "Feed connection error.";
+
+                document.getElementById('summary-huskies').innerText = huskiesStatus;
+                document.getElementById('summary-good').innerText = goodOutcomes;
+                document.getElementById('summary-bad').innerText = badOutcomes;
+
+            } catch (error) {
+                console.error("Endpoint data parse error:", error);
+                if (loader) loader.innerText = "Error syncing with live college football streams.";
             } finally {
-                if (refreshBtn) refreshBtn.innerText = "Refresh";
+                if (btn) btn.innerText = "Refresh Scores";
             }
         }
-        fetchScores();
-        setInterval(fetchScores, 60000); 
+
+        loadHuskiesData();
     </script>
 </body>
 </html>
